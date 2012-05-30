@@ -6,9 +6,9 @@ urlpatterns = patterns('',
         r'^$',
         'django.views.generic.simple.direct_to_template',
         {
-            'template':'base.html', 
+            'template':'scaler/test.html', 
         },
-        name='home'
+        name='scaler-test'
     ),
     url(
         r'^server-busy/$',
