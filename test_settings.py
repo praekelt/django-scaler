@@ -40,5 +40,10 @@ DJANGO_SCALER = {
     # How much slower than average the trend must be before redirection kicks in.
     'slow_threshold': 2.0,
     # How many seconds to keep redirecting an URL before serving normally.
-    'redirect_for': 10
+    'redirect_for': 10,
+    # A function that returns how many of the slowest URLs must be redirected.
+    # Depending on the site, data and load on the server this may be a large
+    # number.  This allows external processes to instruct the middleware to
+    # redirect.
+    'redirect_n_slowest_function': lambda: 0
 }

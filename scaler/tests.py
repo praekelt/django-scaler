@@ -51,7 +51,7 @@ class ScalerTestCase(TestCase):
     def test_excplicit_scaler(self):
         """Middleware is instructed to redirect X slowest URLs"""
         # Do calls so we can decide which URLs are slowest.
-        for i in range(0, 5):
+        for i in range(0, 20):
             response = self.client.get('/?delay=0.1')
             self.assertEqual(response.status_code, 200)        
             response = self.client.get('/scaler-test-one/?delay=0.3')
@@ -59,3 +59,12 @@ class ScalerTestCase(TestCase):
             response = self.client.get('/scaler-test-two/?delay=0.5')
             self.assertEqual(response.status_code, 200)        
 
+        # Set the redirect_n_slowest_function
+        settings.DJANGO_SCALER['redirect_n_slowest_function'] = lambda: 2
+
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)        
+        response = self.client.get('/scaler-test-one/')
+        self.assertEqual(response.status_code, 302)        
+        response = self.client.get('/scaler-test-two/')
+        self.assertEqual(response.status_code, 302)

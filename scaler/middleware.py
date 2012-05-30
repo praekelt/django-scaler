@@ -15,30 +15,39 @@ _request_response_times = {}
 SERVER_BUSY_URL = reverse(settings.DJANGO_SCALER.get('server_busy_url_name', 'server-busy'))
 
 
+def redirect_n_slowest_dummy():
+    return 0
+
+
+def redirect_n_slowest_from_cache():
+    """Simple retrieval from whatever cache is in use"""
+    return cache.get('django_scaler_n_slowest')
+
+
 class ScalerMiddleware:
     """Add as the first middleware in your settings file"""
 
     def process_request(self, request):
        
-        # If a scaler level key is present on the cache then forcefully
-        # redirect the 'level' slowest requests. This allows external processes
-        # to easily instruct us to scale back.  xxx: abstract so we can add
-        # more mechanisms
-        level = cache.get('django_scaler_level')
-        if not request.is_ajax() and level:
+        # If a n_slowest is provided then forcefully redirect the n
+        # slowest requests. This allows external processes to easily instruct
+        # us to scale back.
+        n_slowest = settings.DJANGO_SCALER.get(
+            'redirect_n_slowest_function', redirect_n_slowest_dummy
+        )()
+        if not request.is_ajax() and n_slowest:
             # Sort by slowest reversed
             li = sorted(
                 _request_response_times, 
                 key=_request_response_times.__getitem__, 
                 reverse=True
-            )[:level]
+            )[:n_slowest]
             if request.META['PATH_INFO'] in li:
                 return HttpResponseRedirect(SERVER_BUSY_URL)
 
         # Ajax requests are not subject to scaling. Busy page is exempt from 
         # scaling.
         if not request.is_ajax() and request.META['PATH_INFO'] != SERVER_BUSY_URL:
-            print ""
             now = time.time()
 
             # Marker for process_response
@@ -64,22 +73,15 @@ class ScalerMiddleware:
                 # Update request response times dictionary
                 _request_response_times[request.META['PATH_INFO']] = avg
 
-                print "AVG: %s" % avg
-                print "TREND: %s" % trend
-                #avg = 10
-
                 # If trend is X slower than average then redirect, unless
                 # enough time has passed to attempt processing.
                 slow_threshold = settings.DJANGO_SCALER.get('slow_threshold', 2.0)
-                print sum(trend) * 1.0 / len(trend), avg * slow_threshold
                 if sum(trend) * 1.0 / len(trend) > avg * slow_threshold:
-                    print "REDIR: %s" % redir
                     
                     # Has enough time passed to allow the request?
                     redirect_for = settings.DJANGO_SCALER.get('redirect_for', 60)
                     if now - redir > redirect_for:
                         # Yes, enough time has passed
-                        print "ENOUGH"
 
                         # Clear time of last redirect
                         try:
@@ -93,7 +95,6 @@ class ScalerMiddleware:
 
                     else:
                         # No, not enough time has passed. Keep redirecting.
-                        print "REDIRECT"
 
                         # Remove marker so process_response does not store data
                         delattr(request, '_django_scaler_stamp')
@@ -104,20 +105,17 @@ class ScalerMiddleware:
                         return HttpResponseRedirect(SERVER_BUSY_URL)
 
     def process_response(self, request, response):
-        print "RESPONSE"
         t = getattr(request, '_django_scaler_stamp', None)
         # Anything to do?
         if t is not None:
             # Diff in milliseconds
             diff = int((time.time() - t) * 1000)
-            print "DIFF: %s" % diff
 
             # Fetch values
             prefix = request.META['PATH_INFO'] + '-scaler-'
             key_stamp = prefix + 'stamp'
             key_hits = prefix + 'hits'
             key_trend = prefix + 'trend'
-            print _cache
             stamp = _cache.get(key_stamp, 0)
             hits = _cache.get(key_hits, 0)
             trend = _cache.get(key_trend, [])
