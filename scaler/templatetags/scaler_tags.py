@@ -8,16 +8,14 @@ register = template.Library()
 @register.tag
 def delay(parser, token):
     tag_name, value = token.split_contents()
-    return DelayNode(value)
+    return DelayNode()
 
 
 class DelayNode(template.Node):
 
-    def __init__(self, value):
-        self.value = template.Variable(value)
-
     def render(self, context):
-        value = self.value.resolve(context)
+        value = float(context['request'].GET.get('delay', 0))
         if value:
-            time.sleep(float(value))
+            time.sleep(value)
             return "Delayed by %s seconds" % value
+        return ''

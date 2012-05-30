@@ -11,6 +11,22 @@ urlpatterns = patterns('',
         name='scaler-test'
     ),
     url(
+        r'^scaler-test-one/$',
+        'django.views.generic.simple.direct_to_template',
+        {
+            'template':'scaler/test.html', 
+        },
+        name='scaler-test-one'
+    ),
+    url(
+        r'^scaler-test-two/$',
+        'django.views.generic.simple.direct_to_template',
+        {
+            'template':'scaler/test.html', 
+        },
+        name='scaler-test-two'
+    ),
+    url(
         r'^server-busy/$',
         'django.views.generic.simple.direct_to_template',
         {

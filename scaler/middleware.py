@@ -21,12 +21,12 @@ class ScalerMiddleware:
     def process_request(self, request):
        
         # If a scaler level key is present on the cache then forcefully
-        # redirect the 'level' most expensive requests. This allows external
-        # processes to easily instruct us to scale back.  xxx: abstract so we
-        # can add more mechanisms
+        # redirect the 'level' slowest requests. This allows external processes
+        # to easily instruct us to scale back.  xxx: abstract so we can add
+        # more mechanisms
         level = cache.get('django_scaler_level')
         if not request.is_ajax() and level:
-            # Sort by most expensive reversed
+            # Sort by slowest reversed
             li = sorted(
                 _request_response_times, 
                 key=_request_response_times.__getitem__, 
@@ -57,8 +57,8 @@ class ScalerMiddleware:
             trend = _cache.get(key_trend, [])
             redir = _cache.get(key_redir, now)
 
-            # Nothing to do if no hits yet
-            if hits:
+            # Nothing to do if not enough hits yet
+            if hits > settings.DJANGO_SCALER.get('trend_size', 10):
                 avg = stamp * 1.0 / hits       
 
                 # Update request response times dictionary
@@ -68,9 +68,11 @@ class ScalerMiddleware:
                 print "TREND: %s" % trend
                 #avg = 10
 
-                # If trend is 50% slower than average then redirect, unless 
+                # If trend is X slower than average then redirect, unless
                 # enough time has passed to attempt processing.
-                if sum(trend) * 1.0 / len(trend) > avg * 1.5:
+                slow_threshold = settings.DJANGO_SCALER.get('slow_threshold', 2.0)
+                print sum(trend) * 1.0 / len(trend), avg * slow_threshold
+                if sum(trend) * 1.0 / len(trend) > avg * slow_threshold:
                     print "REDIR: %s" % redir
                     
                     # Has enough time passed to allow the request?

@@ -37,6 +37,8 @@ DJANGO_SCALER = {
     # A large value means an URL must be slow for a number of requests before 
     # it is acted upon.
     'trend_size': 10,
+    # How much slower than average the trend must be before redirection kicks in.
+    'slow_threshold': 2.0,
     # How many seconds to keep redirecting an URL before serving normally.
-    'redirect_for': 60
+    'redirect_for': 10
 }
