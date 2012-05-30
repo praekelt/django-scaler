@@ -12,7 +12,7 @@ _cache = {}
 _request_response_times = {}
 
 
-class ScalerMiddleWare:
+class ScalerMiddleware:
     """Add as the first middleware in your settings file"""
 
     def process_request(self, request):
