@@ -2,6 +2,7 @@ import time
 
 from django.http import HttpResponseRedirect
 from django.core.cache import cache
+from django.core.urlresolvers import reverse
 from django.conf import settings
 
 # In-memory caches are used since different processes do not necessarily
@@ -10,6 +11,8 @@ from django.conf import settings
 # need to use LocMemCache.
 _cache = {}
 _request_response_times = {}
+
+SERVER_BUSY_URL = reverse(settings.DJANGO_SCALER.get('server_busy_url_name', 'server-busy'))
 
 
 class ScalerMiddleware:
@@ -30,11 +33,11 @@ class ScalerMiddleware:
                 reverse=True
             )[:level]
             if request.META['PATH_INFO'] in li:
-                return HttpResponseRedirect('/coming-soon/')
+                return HttpResponseRedirect(SERVER_BUSY_URL)
 
         # Ajax requests are not subject to scaling. Busy page is exempt from 
         # scaling.
-        if not request.is_ajax() and not request.META['PATH_INFO'].startswith('/coming-soon/'):
+        if not request.is_ajax() and request.META['PATH_INFO'] != SERVER_BUSY_URL:
             print ""
             now = time.time()
 
@@ -95,7 +98,7 @@ class ScalerMiddleware:
                         # Set time of last redirect if it has not been set
                         _cache.setdefault(key_redir, now)
 
-                        return HttpResponseRedirect('/coming-soon/')
+                        return HttpResponseRedirect(SERVER_BUSY_URL)
 
     def process_response(self, request, response):
         print "RESPONSE"
