@@ -12,6 +12,8 @@ Installation
 
 #. Add ``scaler`` to your ``INSTALLED_APPS`` setting.
 
+#. Add ``scaler.middleware.ScalerMiddleware`` to the top of your ``MIDDLEWARE_CLASSES`` setting.
+
 #. Add (r'^scaler/', include('scaler.urls')) to urlpatterns.
 
 Overview
