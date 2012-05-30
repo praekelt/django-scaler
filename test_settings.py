@@ -29,3 +29,14 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.i18n',
     'django.core.context_processors.request',
 )
+
+DJANGO_SCALER = { 
+    'server_busy_url_name': 'server-busy',
+    # How many response times to consider for an URL. A small value means slow
+    # response times are quickly acted upon, but it may be overly aggressive. 
+    # A large value means an URL must be slow for a number of requests before 
+    # it is acted upon.
+    'trend_size': 10,
+    # How many seconds to keep redirecting an URL before serving normally.
+    'redirect_for': 60
+}

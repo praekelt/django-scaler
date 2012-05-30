@@ -74,7 +74,8 @@ class ScalerMiddleware:
                     print "REDIR: %s" % redir
                     
                     # Has enough time passed to allow the request?
-                    if now - redir > 60:
+                    redirect_for = settings.DJANGO_SCALER.get('redirect_for', 60)
+                    if now - redir > redirect_for:
                         # Yes, enough time has passed
                         print "ENOUGH"
 
@@ -122,6 +123,7 @@ class ScalerMiddleware:
             # Set values
             _cache[key_stamp] = stamp + diff
             _cache[key_hits] = hits + 1
-            _cache[key_trend] = (trend + [diff])[-10:]
+            trend_size = settings.DJANGO_SCALER.get('trend_size', 10)
+            _cache[key_trend] = (trend + [diff])[-trend_size:]
 
         return response
