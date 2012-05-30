@@ -43,7 +43,7 @@ Pasted from ``test_settings.py``::
         'trend_size': 10,
 
         # How much slower than average the trend must be before redirection kicks
-        # in. The default is 4.0/
+        # in. The default is 4.0.
         'slow_threshold': 2.0,
 
         # How many seconds to keep redirecting an URL before serving normally. The
