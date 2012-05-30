@@ -51,5 +51,11 @@ DJANGO_SCALER = {
     # Depending on the site, data and load on the server this may be a large
     # number. This allows external processes to instruct the middleware to
     # redirect. The default is 0.
-    'redirect_n_slowest_function': lambda: 0
+    'redirect_n_slowest_function': lambda: 0,
+
+    # A function that returns what percentage of the slowest URLs must be
+    # redirected.  Depending on the site, data and load on the server this may
+    # approach 100.  This allows external processes to instruct the middleware
+    # to redirect. The default is 0.
+    'redirect_percentage_slowest_function': lambda: 0
 }
