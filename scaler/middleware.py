@@ -31,8 +31,15 @@ def redirect_percentage_slowest_dummy():
 
 
 def redirect_percentage_slowest_from_cache():
-    """Simple retrieval from whatever cache is in use"""
     return cache.get('django_scaler_percentage_slowest')
+
+
+def redirect_regexes_dummy():
+    return []
+
+
+def redirect_regexes_from_cache():
+    return cache.get('django_scaler_regexes')
 
 
 class ScalerMiddleware:
@@ -54,6 +61,10 @@ class ScalerMiddleware:
         percentage_slowest = settings.DJANGO_SCALER.get(
             'redirect_percentage_slowest_function',
             redirect_percentage_slowest_dummy
+        )()
+        regexes = settings.DJANGO_SCALER.get(
+            'redirect_regexes_function',
+            redirect_regexes_dummy
         )()
         if not request.is_ajax() and (n_slowest or percentage_slowest):
             # Sort by slowest reversed
