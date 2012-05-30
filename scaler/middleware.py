@@ -7,12 +7,14 @@ from django.conf import settings
 
 # In-memory caches are used since different processes do not necessarily
 # exhibit the same response times, even though they may share a caching backend
-# like memcached. We also don't have to be concerned with thread safety so no 
+# like memcached. We also don't have to be concerned with thread safety so no
 # need to use LocMemCache.
 _cache = {}
 _request_response_times = {}
 
-SERVER_BUSY_URL = reverse(settings.DJANGO_SCALER.get('server_busy_url_name', 'server-busy'))
+SERVER_BUSY_URL = reverse(
+    settings.DJANGO_SCALER.get('server_busy_url_name', 'server-busy')
+)
 
 
 def redirect_n_slowest_dummy():
@@ -28,7 +30,7 @@ class ScalerMiddleware:
     """Add as the first middleware in your settings file"""
 
     def process_request(self, request):
-       
+
         # If a n_slowest is provided then forcefully redirect the n
         # slowest requests. This allows external processes to easily instruct
         # us to scale back.
@@ -38,16 +40,17 @@ class ScalerMiddleware:
         if not request.is_ajax() and n_slowest:
             # Sort by slowest reversed
             li = sorted(
-                _request_response_times, 
-                key=_request_response_times.__getitem__, 
+                _request_response_times,
+                key=_request_response_times.__getitem__,
                 reverse=True
             )[:n_slowest]
             if request.META['PATH_INFO'] in li:
                 return HttpResponseRedirect(SERVER_BUSY_URL)
 
-        # Ajax requests are not subject to scaling. Busy page is exempt from 
+        # Ajax requests are not subject to scaling. Busy page is exempt from
         # scaling.
-        if not request.is_ajax() and request.META['PATH_INFO'] != SERVER_BUSY_URL:
+        if not request.is_ajax() and \
+            request.META['PATH_INFO'] != SERVER_BUSY_URL:
             now = time.time()
 
             # Marker for process_response
@@ -68,18 +71,22 @@ class ScalerMiddleware:
 
             # Nothing to do if not enough hits yet
             if hits > settings.DJANGO_SCALER.get('trend_size', 10):
-                avg = stamp * 1.0 / hits       
+                avg = stamp * 1.0 / hits
 
                 # Update request response times dictionary
                 _request_response_times[request.META['PATH_INFO']] = avg
 
                 # If trend is X slower than average then redirect, unless
                 # enough time has passed to attempt processing.
-                slow_threshold = settings.DJANGO_SCALER.get('slow_threshold', 2.0)
+                slow_threshold = settings.DJANGO_SCALER.get(
+                    'slow_threshold', 2.0
+                )
                 if sum(trend) * 1.0 / len(trend) > avg * slow_threshold:
-                    
+
                     # Has enough time passed to allow the request?
-                    redirect_for = settings.DJANGO_SCALER.get('redirect_for', 60)
+                    redirect_for = settings.DJANGO_SCALER.get(
+                        'redirect_for', 60
+                    )
                     if now - redir > redirect_for:
                         # Yes, enough time has passed
 

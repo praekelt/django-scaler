@@ -6,7 +6,7 @@ urlpatterns = patterns('',
         r'^$',
         'django.views.generic.simple.direct_to_template',
         {
-            'template':'scaler/test.html', 
+            'template': 'scaler/test.html',
         },
         name='scaler-test'
     ),
@@ -14,7 +14,7 @@ urlpatterns = patterns('',
         r'^scaler-test-one/$',
         'django.views.generic.simple.direct_to_template',
         {
-            'template':'scaler/test.html', 
+            'template': 'scaler/test.html',
         },
         name='scaler-test-one'
     ),
@@ -22,7 +22,7 @@ urlpatterns = patterns('',
         r'^scaler-test-two/$',
         'django.views.generic.simple.direct_to_template',
         {
-            'template':'scaler/test.html', 
+            'template': 'scaler/test.html',
         },
         name='scaler-test-two'
     ),
@@ -30,7 +30,7 @@ urlpatterns = patterns('',
         r'^server-busy/$',
         'django.views.generic.simple.direct_to_template',
         {
-            'template':'scaler/server_busy.html', 
+            'template': 'scaler/server_busy.html',
         },
         name='server-busy'
     ),

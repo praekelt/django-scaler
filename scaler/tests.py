@@ -19,7 +19,7 @@ class ScalerTestCase(TestCase):
         # flattens the discrepancy ratio.
         for i in range(0, 20):
             response = self.client.get('/?delay=0.1')
-            self.assertEqual(response.status_code, 200)        
+            self.assertEqual(response.status_code, 200)
 
         # Start making slow requests. We expect a redirection after X requests.
         # We don't care exactly when since many things may influence response
@@ -30,7 +30,7 @@ class ScalerTestCase(TestCase):
                 stamp = time.time()
         self.assertEqual(response.status_code, 302)
 
-        # Make requests every 2 seconds. Redirects are expected for 
+        # Make requests every 2 seconds. Redirects are expected for
         # 10 seconds.
         now = time.time()
         while now - settings.DJANGO_SCALER['redirect_for'] < stamp:
@@ -43,8 +43,8 @@ class ScalerTestCase(TestCase):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
 
-        # And the next request will pass as well since the trend cache is 
-        # clean. 
+        # And the next request will pass as well since the trend cache is
+        # clean.
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
 
@@ -53,18 +53,18 @@ class ScalerTestCase(TestCase):
         # Do calls so we can decide which URLs are slowest.
         for i in range(0, 20):
             response = self.client.get('/?delay=0.1')
-            self.assertEqual(response.status_code, 200)        
+            self.assertEqual(response.status_code, 200)
             response = self.client.get('/scaler-test-one/?delay=0.3')
-            self.assertEqual(response.status_code, 200)        
+            self.assertEqual(response.status_code, 200)
             response = self.client.get('/scaler-test-two/?delay=0.5')
-            self.assertEqual(response.status_code, 200)        
+            self.assertEqual(response.status_code, 200)
 
         # Set the redirect_n_slowest_function
         settings.DJANGO_SCALER['redirect_n_slowest_function'] = lambda: 2
 
         response = self.client.get('/')
-        self.assertEqual(response.status_code, 200)        
+        self.assertEqual(response.status_code, 200)
         response = self.client.get('/scaler-test-one/')
-        self.assertEqual(response.status_code, 302)        
+        self.assertEqual(response.status_code, 302)
         response = self.client.get('/scaler-test-two/')
         self.assertEqual(response.status_code, 302)
