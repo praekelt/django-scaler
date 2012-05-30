@@ -17,7 +17,7 @@ class ScalerTestCase(TestCase):
         settings.DJANGO_SCALER['redirect_percentage_slowest_function'] = \
             lambda: 0
         settings.DJANGO_SCALER['redirect_regexes_function'] = lambda: []
- 
+
     def test_auto_scaler(self):
         """Middleware redirects requests by itself"""
         self.reset_settings()
@@ -95,6 +95,20 @@ class ScalerTestCase(TestCase):
         # Set the redirect_percentage_slowest_function
         settings.DJANGO_SCALER['redirect_percentage_slowest_function'] = \
             lambda: 67
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('/scaler-test-one/')
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get('/scaler-test-two/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_excplicit_scaler_regexes(self):
+        """Middleware is instructed to redirect if URL matches a regex in
+        list."""
+        self.reset_settings()
+
+        settings.DJANGO_SCALER['redirect_regexes_function'] = \
+            lambda: ['/scaler-test-o', '/scaler-test-t']
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         response = self.client.get('/scaler-test-one/')

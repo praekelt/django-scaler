@@ -1,4 +1,5 @@
 import time
+import re
 
 from django.http import HttpResponseRedirect
 from django.core.cache import cache
@@ -66,13 +67,14 @@ class ScalerMiddleware:
             'redirect_regexes_function',
             redirect_regexes_dummy
         )()
-        if not request.is_ajax() and (n_slowest or percentage_slowest):
-            # Sort by slowest reversed
-            paths = sorted(
-                _request_response_times,
-                key=_request_response_times.__getitem__,
-                reverse=True
-            )
+        if not request.is_ajax():
+            if n_slowest or percentage_slowest:
+                # Sort by slowest reversed
+                paths = sorted(
+                    _request_response_times,
+                    key=_request_response_times.__getitem__,
+                    reverse=True
+                )
             if n_slowest:
                 li = paths[:n_slowest]
                 if request.META['PATH_INFO'] in li:
@@ -82,6 +84,11 @@ class ScalerMiddleware:
                 li = paths[:n]
                 if request.META['PATH_INFO'] in li:
                     return HttpResponseRedirect(SERVER_BUSY_URL)
+            if regexes:
+                for regex in regexes:
+                    m = re.match(r'%s' % regex, request.META['PATH_INFO'])
+                    if m is not None:
+                        return HttpResponseRedirect(SERVER_BUSY_URL)
 
         # On to automatic redirection
         now = time.time()

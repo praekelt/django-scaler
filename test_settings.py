@@ -59,6 +59,7 @@ DJANGO_SCALER = {
     'redirect_percentage_slowest_function': lambda: 0,
 
     # A function that returns a list of regexes. URLs matching the regexes are
-    # redirected. The default is an empty list.
+    # redirected. Each regex is a simple string. Do not prefix with r''. The
+    # default is an empty list.
     'redirect_regexes_function': lambda: [],
 }
