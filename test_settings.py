@@ -32,18 +32,24 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 DJANGO_SCALER = { 
     'server_busy_url_name': 'server-busy',
+
     # How many response times to consider for an URL. A small value means slow
     # response times are quickly acted upon, but it may be overly aggressive. 
     # A large value means an URL must be slow for a number of requests before 
-    # it is acted upon.
+    # it is acted upon. The default is 100.
     'trend_size': 10,
-    # How much slower than average the trend must be before redirection kicks in.
+
+    # How much slower than average the trend must be before redirection kicks
+    # in. The default is 4.0.
     'slow_threshold': 2.0,
-    # How many seconds to keep redirecting an URL before serving normally.
+
+    # How many seconds to keep redirecting an URL before serving normally. The
+    # default is 60.
     'redirect_for': 10,
+
     # A function that returns how many of the slowest URLs must be redirected.
     # Depending on the site, data and load on the server this may be a large
-    # number.  This allows external processes to instruct the middleware to
-    # redirect.
+    # number. This allows external processes to instruct the middleware to
+    # redirect. The default is 0.
     'redirect_n_slowest_function': lambda: 0
 }

@@ -70,7 +70,7 @@ class ScalerMiddleware:
             redir = _cache.get(key_redir, now)
 
             # Nothing to do if not enough hits yet
-            if hits > settings.DJANGO_SCALER.get('trend_size', 10):
+            if hits > settings.DJANGO_SCALER.get('trend_size', 100):
                 avg = stamp * 1.0 / hits
 
                 # Update request response times dictionary
@@ -79,7 +79,7 @@ class ScalerMiddleware:
                 # If trend is X slower than average then redirect, unless
                 # enough time has passed to attempt processing.
                 slow_threshold = settings.DJANGO_SCALER.get(
-                    'slow_threshold', 2.0
+                    'slow_threshold', 4.0
                 )
                 if sum(trend) * 1.0 / len(trend) > avg * slow_threshold:
 
@@ -130,7 +130,7 @@ class ScalerMiddleware:
             # Set values
             _cache[key_stamp] = stamp + diff
             _cache[key_hits] = hits + 1
-            trend_size = settings.DJANGO_SCALER.get('trend_size', 10)
+            trend_size = settings.DJANGO_SCALER.get('trend_size', 100)
             _cache[key_trend] = (trend + [diff])[-trend_size:]
 
         return response
