@@ -4,7 +4,7 @@ setup(
     name='django-scaler',
     description='Degrade gracefully by automatically replacing heavy pages with static pages while a server is taking strain.',
     long_description = open('README.rst', 'r').read() + open('AUTHORS.rst', 'r').read() + open('CHANGELOG.rst', 'r').read(),
-    version='0.1',
+    version='0.2',
     author='Praekelt Foundation',
     author_email='dev@praekelt.com',
     license='BSD',

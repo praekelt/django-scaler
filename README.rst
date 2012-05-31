@@ -56,6 +56,16 @@ Pasted from ``test_settings.py``::
         # Depending on the site, data and load on the server this may be a large
         # number. This allows external processes to instruct the middleware to
         # redirect. The default is 0.
-        'redirect_n_slowest_function': lambda: 0
+        'redirect_n_slowest_function': lambda: 0,
+
+        # A function that returns what percentage of the slowest URLs must be
+        # redirected. Depending on the site, data and load on the server this may
+        # approach 100. The default is 0.
+        'redirect_percentage_slowest_function': lambda: 0,
+
+        # A function that returns a list of regexes. URLs matching the regexes are
+        # redirected. Each regex is a simple string. Do not prefix with r''. The
+        # default is an empty list.
+        'redirect_regexes_function': lambda: [],
     }
 

@@ -12,8 +12,16 @@ class ScalerTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
+    def reset_settings(self):
+        settings.DJANGO_SCALER['redirect_n_slowest_function'] = lambda: 0
+        settings.DJANGO_SCALER['redirect_percentage_slowest_function'] = \
+            lambda: 0
+        settings.DJANGO_SCALER['redirect_regexes_function'] = lambda: []
+
     def test_auto_scaler(self):
         """Middleware redirects requests by itself"""
+        self.reset_settings()
+
         # Use delay to smooth out anomalies. A page may render in 5ms and the
         # next time in 20ms because of many reasons. A large enough delay
         # flattens the discrepancy ratio.
@@ -48,8 +56,10 @@ class ScalerTestCase(TestCase):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
 
-    def test_excplicit_scaler(self):
+    def test_excplicit_scaler_n_slowest(self):
         """Middleware is instructed to redirect X slowest URLs"""
+        self.reset_settings()
+
         # Do calls so we can decide which URLs are slowest.
         for i in range(0, 20):
             response = self.client.get('/?delay=0.1')
@@ -62,6 +72,43 @@ class ScalerTestCase(TestCase):
         # Set the redirect_n_slowest_function
         settings.DJANGO_SCALER['redirect_n_slowest_function'] = lambda: 2
 
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('/scaler-test-one/')
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get('/scaler-test-two/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_excplicit_scaler_percentage_slowest(self):
+        """Middleware is instructed to redirect % slowest URLs"""
+        self.reset_settings()
+
+        # Do calls so we can decide which URLs are slowest.
+        for i in range(0, 20):
+            response = self.client.get('/?delay=0.1')
+            self.assertEqual(response.status_code, 200)
+            response = self.client.get('/scaler-test-one/?delay=0.3')
+            self.assertEqual(response.status_code, 200)
+            response = self.client.get('/scaler-test-two/?delay=0.5')
+            self.assertEqual(response.status_code, 200)
+
+        # Set the redirect_percentage_slowest_function
+        settings.DJANGO_SCALER['redirect_percentage_slowest_function'] = \
+            lambda: 67
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('/scaler-test-one/')
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get('/scaler-test-two/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_excplicit_scaler_regexes(self):
+        """Middleware is instructed to redirect if URL matches a regex in
+        list."""
+        self.reset_settings()
+
+        settings.DJANGO_SCALER['redirect_regexes_function'] = \
+            lambda: ['/scaler-test-o', '/scaler-test-t']
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         response = self.client.get('/scaler-test-one/')
